@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <UserSecretsId>homeinventory-api-dev</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HomeInventory.Application\HomeInventory.Application.csproj" />
+    <ProjectReference Include="..\HomeInventory.Infrastructure\HomeInventory.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

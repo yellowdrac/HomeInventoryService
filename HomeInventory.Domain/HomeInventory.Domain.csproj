@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Domain es el núcleo: POCOs y enums puros. SIN paquetes ni referencias a otros proyectos. -->
+
+</Project>

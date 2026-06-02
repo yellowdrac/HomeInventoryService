@@ -1,0 +1,7 @@
+@HomeInventory.Api_HostAddress = http://localhost:5080
+
+### Health check (estado, conexión a BD, timestamp y versión)
+GET {{HomeInventory.Api_HostAddress}}/health
+Accept: application/json
+
+###
