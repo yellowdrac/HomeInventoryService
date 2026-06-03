@@ -1,6 +1,7 @@
 using HomeInventory.Application.Common.Abstractions;
 using HomeInventory.Infrastructure.Identity;
 using HomeInventory.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace HomeInventory.Infrastructure;
 
 /// <summary>
-/// Registration of the infrastructure services (persistence, identity) in the container.
+/// Registration of the infrastructure services (persistence, identity, tokens) in the container.
 /// </summary>
 public static class DependencyInjection
 {
@@ -25,8 +26,27 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
-        // TODO Phase 1: replace with an implementation based on the JWT claims.
-        services.AddScoped<ICurrentUser, CurrentUserStub>();
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+        services
+            .AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.Password.RequireDigit = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddRoles<IdentityRole<Guid>>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddSingleton<ITokenService, TokenService>();
 
         return services;
     }

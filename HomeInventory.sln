@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeInventory.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeInventory.Api", "HomeInventory.Api\HomeInventory.Api.csproj", "{B8C05876-C778-49DD-9DDF-4DCF97F82DE9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeInventory.Application.UnitTests", "HomeInventory.Application.UnitTests\HomeInventory.Application.UnitTests.csproj", "{E3BF5D52-FF7C-44EA-8128-2C413A748E02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{B8C05876-C778-49DD-9DDF-4DCF97F82DE9}.Release|x64.Build.0 = Release|Any CPU
 		{B8C05876-C778-49DD-9DDF-4DCF97F82DE9}.Release|x86.ActiveCfg = Release|Any CPU
 		{B8C05876-C778-49DD-9DDF-4DCF97F82DE9}.Release|x86.Build.0 = Release|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Debug|x64.Build.0 = Debug|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Debug|x86.Build.0 = Debug|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Release|x64.ActiveCfg = Release|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Release|x64.Build.0 = Release|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Release|x86.ActiveCfg = Release|Any CPU
+		{E3BF5D52-FF7C-44EA-8128-2C413A748E02}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

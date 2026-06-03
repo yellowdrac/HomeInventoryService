@@ -9,5 +9,9 @@ public interface ICurrentUser
 {
     Guid UserId { get; }
 
-    Guid HouseholdId { get; }
+    /// <summary>
+    /// The household the user belongs to, or <c>null</c> when the user has not yet created or
+    /// joined one. A null value means scoped data is filtered out by the global query filter.
+    /// </summary>
+    Guid? HouseholdId { get; }
 }

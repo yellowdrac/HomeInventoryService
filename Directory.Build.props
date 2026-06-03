@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <!-- La definición de "hecho" exige cero warnings de nulabilidad: los tratamos como errores -->
+    <!-- The definition of done requires zero nullability warnings: we treat them as errors -->
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>

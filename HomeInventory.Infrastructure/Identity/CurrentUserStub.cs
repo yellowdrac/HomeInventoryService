@@ -16,5 +16,5 @@ public class CurrentUserStub : ICurrentUser
 
     public Guid UserId => DevelopmentUserId;
 
-    public Guid HouseholdId => DevelopmentHouseholdId;
+    public Guid? HouseholdId => DevelopmentHouseholdId;
 }
