@@ -16,7 +16,7 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
         // Allows overriding the connection string via environment variable; otherwise uses local Postgres.
         var connectionString =
             Environment.GetEnvironmentVariable("HOMEINVENTORY_CONNECTION")
-            ?? "Host=localhost;Port=5432;Database=homeinventory;Username=postgres;Password=postgres";
+            ?? "Host=localhost;Port=5432;Database=homeinventory;Username=postgres;Password=postgres123";
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql(

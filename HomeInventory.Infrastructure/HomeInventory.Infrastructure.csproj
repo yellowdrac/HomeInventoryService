@@ -4,13 +4,18 @@
     <ProjectReference Include="..\HomeInventory.Application\HomeInventory.Application.csproj" />
   </ItemGroup>
 
+  <!-- Identity, JWT creation and HttpContext access are infrastructure concerns. -->
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
-    <!-- Unifica EFCore.Relational a 10.0.8 (el provider Npgsql 10.0.2 trae 10.0.4) y evita MSB3277. -->
+    <!-- Pins EFCore.Relational to 10.0.8 (the Npgsql 10.0.2 provider brings 10.0.4) and avoids MSB3277. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
   </ItemGroup>

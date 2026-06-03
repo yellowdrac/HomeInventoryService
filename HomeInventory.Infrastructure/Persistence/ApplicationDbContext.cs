@@ -2,16 +2,21 @@ using System.Reflection;
 using HomeInventory.Application.Common.Abstractions;
 using HomeInventory.Domain.Common;
 using HomeInventory.Domain.Entities;
+using HomeInventory.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HomeInventory.Infrastructure.Persistence;
 
 /// <summary>
-/// EF Core implementation of <see cref="IApplicationDbContext"/>. Applies the
-/// per-entity configurations, enables the Postgres extensions and wires up the
-/// global multi-tenant filter by household.
+/// EF Core implementation of <see cref="IApplicationDbContext"/>. Inherits from
+/// <see cref="IdentityDbContext{TUser, TRole, TKey}"/> so the Identity and domain tables share the
+/// same context and migration. Applies the per-entity configurations, enables the Postgres
+/// extensions and wires up the global multi-tenant filter by household.
 /// </summary>
-public class ApplicationDbContext : DbContext, IApplicationDbContext
+public class ApplicationDbContext
+    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, IApplicationDbContext
 {
     private readonly ICurrentUser _currentUser;
 
@@ -20,6 +25,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         _currentUser = currentUser;
     }
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<Household> Households => Set<Household>();
 
