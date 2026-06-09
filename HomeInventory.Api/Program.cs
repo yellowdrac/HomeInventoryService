@@ -73,5 +73,6 @@ app.MapHealthChecks("/health", new HealthCheckOptions
 
 app.MapAuthEndpoints();
 app.MapHouseholdEndpoints();
+app.MapLocationEndpoints();
 
 app.Run();

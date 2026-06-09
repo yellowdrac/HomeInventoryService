@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         services.AddSingleton<IJoinCodeGenerator, JoinCodeGenerator>();
+        services.AddSingleton<IQrSlugGenerator, QrSlugGenerator>();
 
         return services;
     }
