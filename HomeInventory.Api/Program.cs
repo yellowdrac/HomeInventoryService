@@ -77,5 +77,6 @@ app.MapLocationEndpoints();
 app.MapItemEndpoints();
 app.MapStockEndpoints();
 app.MapMovementEndpoints();
+app.MapSearchEndpoints();
 
 app.Run();
