@@ -62,6 +62,30 @@ public class GetItemByIdQueryHandlerTests
     }
 
     [Fact]
+    public async Task Orders_lots_fefo_with_undated_lots_last()
+    {
+        var locationId = Guid.NewGuid();
+        var item = new Item
+        {
+            Id = _itemId, HouseholdId = _householdId, Name = "Yogurt",
+            NormalizedName = "yogurt", TrackingType = TrackingType.Quantity, Unit = "unit",
+        };
+        var location = new Location
+        {
+            Id = locationId, HouseholdId = _householdId, Name = "Fridge", Type = LocationType.Furniture, QrSlug = "fridge",
+        };
+        var undated = new StockLot { Id = Guid.NewGuid(), HouseholdId = _householdId, ItemId = _itemId, LocationId = locationId, Quantity = 1 };
+        var later = new StockLot { Id = Guid.NewGuid(), HouseholdId = _householdId, ItemId = _itemId, LocationId = locationId, Quantity = 1, ExpirationDate = new DateOnly(2026, 8, 1) };
+        var sooner = new StockLot { Id = Guid.NewGuid(), HouseholdId = _householdId, ItemId = _itemId, LocationId = locationId, Quantity = 1, ExpirationDate = new DateOnly(2026, 6, 15) };
+        var handler = BuildHandler([item], [location], [undated, later, sooner]);
+
+        var result = await handler.Handle(new GetItemByIdQuery(_itemId), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Lots.Select(l => l.Id).Should().ContainInOrder(sooner.Id, later.Id, undated.Id);
+    }
+
+    [Fact]
     public async Task Fails_when_the_item_does_not_exist_in_the_household()
     {
         var handler = BuildHandler([], [], []);

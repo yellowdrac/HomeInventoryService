@@ -46,7 +46,10 @@ public sealed class GetItemByIdQueryHandler : IRequestHandler<GetItemByIdQuery, 
 
         var itemsById = new Dictionary<Guid, Domain.Entities.Item> { [item.Id] = item };
 
+        // FEFO: surface the lots that expire first, with the non-perishable ones (no date) last.
         var lotDtos = lots
+            .OrderBy(l => l.ExpirationDate.HasValue ? 0 : 1)
+            .ThenBy(l => l.ExpirationDate)
             .Select(lot => StockLotDtoFactory.Build(lot, itemsById, locationsById))
             .ToList();
 
