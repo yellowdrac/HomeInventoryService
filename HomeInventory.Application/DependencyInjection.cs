@@ -2,6 +2,7 @@ using FluentValidation;
 using HomeInventory.Application.Common.Abstractions;
 using HomeInventory.Application.Common.Behaviors;
 using HomeInventory.Application.Common.Identity;
+using HomeInventory.Application.Common.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,9 @@ public static class DependencyInjection
 
         services.AddSingleton<IJoinCodeGenerator, JoinCodeGenerator>();
         services.AddSingleton<IQrSlugGenerator, QrSlugGenerator>();
+
+        // Scoped: the stock service stages mutations on the per-request DbContext.
+        services.AddScoped<IStockService, StockService>();
 
         return services;
     }

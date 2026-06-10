@@ -1,0 +1,74 @@
+using FluentAssertions;
+using HomeInventory.Application.Common.Abstractions;
+using HomeInventory.Application.Common.Errors;
+using HomeInventory.Application.Items.Queries.GetItemById;
+using HomeInventory.Domain.Entities;
+using HomeInventory.Domain.Enums;
+using MockQueryable.NSubstitute;
+using NSubstitute;
+using Xunit;
+
+namespace HomeInventory.Application.UnitTests.Items;
+
+public class GetItemByIdQueryHandlerTests
+{
+    private readonly Guid _householdId = Guid.NewGuid();
+    private readonly Guid _itemId = Guid.NewGuid();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
+    private readonly IApplicationDbContext _context = Substitute.For<IApplicationDbContext>();
+
+    private GetItemByIdQueryHandler BuildHandler(
+        List<Item> items, List<Location> locations, List<StockLot> stockLots)
+    {
+        var itemsDbSet = items.BuildMockDbSet();
+        var locationsDbSet = locations.BuildMockDbSet();
+        var stockLotsDbSet = stockLots.BuildMockDbSet();
+        _context.Items.Returns(itemsDbSet);
+        _context.Locations.Returns(locationsDbSet);
+        _context.StockLots.Returns(stockLotsDbSet);
+        _currentUser.HouseholdId.Returns(_householdId);
+
+        return new GetItemByIdQueryHandler(_currentUser, _context);
+    }
+
+    [Fact]
+    public async Task Returns_the_item_with_its_lots_and_total_quantity()
+    {
+        var rootId = Guid.NewGuid();
+        var drawerId = Guid.NewGuid();
+        var item = new Item
+        {
+            Id = _itemId, HouseholdId = _householdId, Name = "Batteries",
+            NormalizedName = "batteries", TrackingType = TrackingType.Quantity, Unit = "unit",
+        };
+        var locations = new List<Location>
+        {
+            new() { Id = rootId, HouseholdId = _householdId, Name = "Home", Type = LocationType.Zone, QrSlug = "home" },
+            new() { Id = drawerId, HouseholdId = _householdId, ParentId = rootId, Name = "Drawer", Type = LocationType.Container, QrSlug = "drawer" },
+        };
+        var lots = new List<StockLot>
+        {
+            new() { Id = Guid.NewGuid(), HouseholdId = _householdId, ItemId = _itemId, LocationId = drawerId, Quantity = 5 },
+            new() { Id = Guid.NewGuid(), HouseholdId = _householdId, ItemId = _itemId, LocationId = drawerId, Quantity = 2 },
+        };
+        var handler = BuildHandler([item], locations, lots);
+
+        var result = await handler.Handle(new GetItemByIdQuery(_itemId), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.TotalQuantity.Should().Be(7);
+        result.Value.Lots.Should().HaveCount(2);
+        result.Value.Lots[0].LocationBreadcrumb.Should().ContainInOrder("Home", "Drawer");
+    }
+
+    [Fact]
+    public async Task Fails_when_the_item_does_not_exist_in_the_household()
+    {
+        var handler = BuildHandler([], [], []);
+
+        var result = await handler.Handle(new GetItemByIdQuery(_itemId), CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ItemErrors.NotFound);
+    }
+}
