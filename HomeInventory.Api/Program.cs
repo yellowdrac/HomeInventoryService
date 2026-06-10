@@ -76,5 +76,6 @@ app.MapHouseholdEndpoints();
 app.MapLocationEndpoints();
 app.MapItemEndpoints();
 app.MapStockEndpoints();
+app.MapMovementEndpoints();
 
 app.Run();

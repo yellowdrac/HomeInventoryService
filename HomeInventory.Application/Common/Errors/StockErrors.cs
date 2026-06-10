@@ -18,4 +18,19 @@ public static class StockErrors
         Error.Conflict(
             "Stock.UniqueAlreadyStocked",
             "A unique-tracked item can only have a single stock lot.");
+
+    public static readonly Error InsufficientQuantity =
+        Error.Validation(
+            "Stock.InsufficientQuantity",
+            "The requested quantity exceeds the quantity available in the lot.");
+
+    public static readonly Error SameLocation =
+        Error.Validation(
+            "Stock.SameLocation",
+            "The destination location must be different from the current location of the lot.");
+
+    public static readonly Error UniqueMustMoveWholeLot =
+        Error.Validation(
+            "Stock.UniqueMustMoveWholeLot",
+            "A unique-tracked item must be moved as a whole lot.");
 }

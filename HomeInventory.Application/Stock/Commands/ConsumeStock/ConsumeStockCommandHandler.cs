@@ -4,15 +4,15 @@ using HomeInventory.Application.Common.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace HomeInventory.Application.Stock.Commands.DeleteStockLot;
+namespace HomeInventory.Application.Stock.Commands.ConsumeStock;
 
-public sealed class DeleteStockLotCommandHandler : IRequestHandler<DeleteStockLotCommand, Result>
+public sealed class ConsumeStockCommandHandler : IRequestHandler<ConsumeStockCommand, Result>
 {
     private readonly ICurrentUser _currentUser;
     private readonly IApplicationDbContext _context;
     private readonly IStockService _stockService;
 
-    public DeleteStockLotCommandHandler(
+    public ConsumeStockCommandHandler(
         ICurrentUser currentUser,
         IApplicationDbContext context,
         IStockService stockService)
@@ -22,7 +22,7 @@ public sealed class DeleteStockLotCommandHandler : IRequestHandler<DeleteStockLo
         _stockService = stockService;
     }
 
-    public async Task<Result> Handle(DeleteStockLotCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ConsumeStockCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.HouseholdId is not { } householdId)
         {
@@ -31,14 +31,19 @@ public sealed class DeleteStockLotCommandHandler : IRequestHandler<DeleteStockLo
 
         var lot = await _context.StockLots
             .FirstOrDefaultAsync(
-                s => s.Id == request.Id && s.HouseholdId == householdId,
+                s => s.Id == request.StockLotId && s.HouseholdId == householdId,
                 cancellationToken);
         if (lot is null)
         {
             return Result.Failure(StockErrors.LotNotFound);
         }
 
-        _stockService.DiscardLot(lot);
+        if (request.Quantity > lot.Quantity)
+        {
+            return Result.Failure(StockErrors.InsufficientQuantity);
+        }
+
+        _stockService.Consume(lot, request.Quantity, request.Reason);
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

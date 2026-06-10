@@ -16,6 +16,7 @@ public class AddStockCommandHandlerTests
     private readonly Guid _householdId = Guid.NewGuid();
     private readonly Guid _itemId = Guid.NewGuid();
     private readonly Guid _locationId = Guid.NewGuid();
+    private readonly Guid _userId = Guid.NewGuid();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly IApplicationDbContext _context = Substitute.For<IApplicationDbContext>();
 
@@ -25,13 +26,16 @@ public class AddStockCommandHandlerTests
         var itemsDbSet = items.BuildMockDbSet();
         var locationsDbSet = locations.BuildMockDbSet();
         var stockLotsDbSet = stockLots.BuildMockDbSet();
+        var movementsDbSet = new List<Movement>().BuildMockDbSet();
         _context.Items.Returns(itemsDbSet);
         _context.Locations.Returns(locationsDbSet);
         _context.StockLots.Returns(stockLotsDbSet);
+        _context.Movements.Returns(movementsDbSet);
         _context.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
         _currentUser.HouseholdId.Returns(_householdId);
+        _currentUser.UserId.Returns(_userId);
 
-        return new AddStockCommandHandler(_currentUser, _context, new StockService(_context));
+        return new AddStockCommandHandler(_currentUser, _context, new StockService(_context, _currentUser));
     }
 
     private Item ItemOf(TrackingType tracking, Guid? householdId = null) => new()
@@ -66,6 +70,14 @@ public class AddStockCommandHandlerTests
         result.Value.LocationName.Should().Be("Drawer");
         _context.StockLots.Received(1).Add(Arg.Is<StockLot>(s =>
             s.ItemId == _itemId && s.LocationId == _locationId && s.HouseholdId == _householdId));
+        // Retrofit: adding stock records a Created movement (To = location, no source).
+        _context.Movements.Received(1).Add(Arg.Is<Movement>(m =>
+            m.Type == MovementType.Created
+            && m.Quantity == 3
+            && m.ItemId == _itemId
+            && m.ToLocationId == _locationId
+            && m.FromLocationId == null
+            && m.PerformedByUserId == _userId));
     }
 
     [Fact]

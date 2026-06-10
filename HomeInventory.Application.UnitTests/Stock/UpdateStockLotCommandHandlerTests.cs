@@ -17,6 +17,7 @@ public class UpdateStockLotCommandHandlerTests
     private readonly Guid _lotId = Guid.NewGuid();
     private readonly Guid _itemId = Guid.NewGuid();
     private readonly Guid _locationId = Guid.NewGuid();
+    private readonly Guid _userId = Guid.NewGuid();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly IApplicationDbContext _context = Substitute.For<IApplicationDbContext>();
 
@@ -26,13 +27,16 @@ public class UpdateStockLotCommandHandlerTests
         var itemsDbSet = items.BuildMockDbSet();
         var locationsDbSet = locations.BuildMockDbSet();
         var stockLotsDbSet = stockLots.BuildMockDbSet();
+        var movementsDbSet = new List<Movement>().BuildMockDbSet();
         _context.Items.Returns(itemsDbSet);
         _context.Locations.Returns(locationsDbSet);
         _context.StockLots.Returns(stockLotsDbSet);
+        _context.Movements.Returns(movementsDbSet);
         _context.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
         _currentUser.HouseholdId.Returns(_householdId);
+        _currentUser.UserId.Returns(_userId);
 
-        return new UpdateStockLotCommandHandler(_currentUser, _context, new StockService(_context));
+        return new UpdateStockLotCommandHandler(_currentUser, _context, new StockService(_context, _currentUser));
     }
 
     private List<Location> SingleLocation() =>
@@ -64,6 +68,26 @@ public class UpdateStockLotCommandHandlerTests
         result.Value.Quantity.Should().Be(8);
         result.Value.ExpirationDate.Should().Be(expiration);
         lot.Quantity.Should().Be(8);
+        // Retrofit: a quantity change records an Adjusted movement with the signed delta (8 - 2 = 6).
+        _context.Movements.Received(1).Add(Arg.Is<Movement>(m =>
+            m.Type == MovementType.Adjusted
+            && m.Quantity == 6
+            && m.ItemId == _itemId
+            && m.PerformedByUserId == _userId));
+    }
+
+    [Fact]
+    public async Task Does_not_record_a_movement_when_only_dates_change()
+    {
+        var item = new Item { Id = _itemId, HouseholdId = _householdId, Name = "Batteries", NormalizedName = "batteries", TrackingType = TrackingType.Quantity };
+        var lot = Lot(5);
+        var handler = BuildHandler([item], SingleLocation(), [lot]);
+
+        var result = await handler.Handle(
+            new UpdateStockLotCommand(_lotId, 5, new DateOnly(2027, 1, 1), null), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        _context.Movements.DidNotReceive().Add(Arg.Any<Movement>());
     }
 
     [Fact]
