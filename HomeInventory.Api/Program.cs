@@ -20,11 +20,19 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // JWT bearer authentication + authorization.
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// CORS for the frontend in development.
+// CORS for the frontend. Allowed origins come from configuration
+// (Cors:AllowedOrigins, e.g. the env var Cors__AllowedOrigins__0 in production)
+// and fall back to the local dev frontend.
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (corsOrigins is null || corsOrigins.Length == 0)
+{
+    corsOrigins = ["http://localhost:3000"];
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(FrontendCorsPolicy, policy =>
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(corsOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
@@ -54,6 +62,13 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// Optionally apply EF Core migrations at startup. Configurable via RUN_MIGRATIONS_ON_STARTUP
+// (env var); convenient for single-instance hosting such as Render.
+if (builder.Configuration.GetValue<bool>("RUN_MIGRATIONS_ON_STARTUP"))
+{
+    await app.Services.ApplyMigrationsAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {

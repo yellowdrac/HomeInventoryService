@@ -1,0 +1,51 @@
+# Local backend environment: postgres + backend (migrated on startup).
+#
+# This is for the backend only. The frontend lives in a separate repository and
+# deploys to Vercel, so it is not part of this stack. Run the frontend separately
+# (e.g. `yarn dev`) and point it at http://localhost:8080.
+#
+# All values here are local development defaults only; no production secrets belong
+# in this file.
+#
+# Usage: docker compose up --build
+
+name: homeinventory-backend
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: homeinventory
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d homeinventory"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      PORT: "8080"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=homeinventory;Username=postgres;Password=postgres123"
+      # Local-only dev signing key (must be >= 32 chars). Use a real secret in production.
+      Jwt__SigningKey: "local-development-signing-key-change-me-please-32"
+      # Allow the local frontend dev server (Vite on :3000) to call the API.
+      Cors__AllowedOrigins__0: "http://localhost:3000"
+      RUN_MIGRATIONS_ON_STARTUP: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
