@@ -35,6 +35,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       PORT: "8080"
+      # Local-only connnection string
       ConnectionStrings__Default: "Host=postgres;Port=5432;Database=homeinventory;Username=postgres;Password=postgres123"
       # Local-only dev signing key (must be >= 32 chars). Use a real secret in production.
       Jwt__SigningKey: "local-development-signing-key-change-me-please-32"
