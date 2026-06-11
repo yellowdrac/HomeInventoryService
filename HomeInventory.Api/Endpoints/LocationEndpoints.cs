@@ -4,7 +4,9 @@ using HomeInventory.Application.Locations.Commands.DeleteLocation;
 using HomeInventory.Application.Locations.Commands.MoveLocation;
 using HomeInventory.Application.Locations.Commands.UpdateLocation;
 using HomeInventory.Application.Locations.Queries.GetLocationById;
+using HomeInventory.Application.Locations.Queries.GetLocationBySlug;
 using HomeInventory.Application.Locations.Queries.GetLocationTree;
+using HomeInventory.Application.Locations.Queries.GetPrintableLocations;
 using HomeInventory.Domain.Enums;
 using MediatR;
 
@@ -21,6 +23,12 @@ public static class LocationEndpoints
 
         group.MapGet("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
             (await sender.Send(new GetLocationByIdQuery(id), ct)).ToHttpResult());
+
+        group.MapGet("/by-slug/{slug}", async (string slug, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new GetLocationBySlugQuery(slug), ct)).ToHttpResult());
+
+        group.MapGet("/printable", async (Guid? locationId, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new GetPrintableLocationsQuery(locationId), ct)).ToHttpResult());
 
         group.MapPost("", async (CreateLocationCommand command, ISender sender, CancellationToken ct) =>
             (await sender.Send(command, ct)).ToHttpResult());
