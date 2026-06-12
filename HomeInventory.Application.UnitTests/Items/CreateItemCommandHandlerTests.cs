@@ -32,7 +32,7 @@ public class CreateItemCommandHandlerTests
         var handler = BuildHandler([]);
 
         var result = await handler.Handle(
-            new CreateItemCommand("Pilas AA Recargables Ácido", "Electrónica", null, TrackingType.Quantity, "unit", null),
+            new CreateItemCommand("Pilas AA Recargables Ácido", "Electrónica", null, TrackingType.Quantity, "unit"),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -48,7 +48,7 @@ public class CreateItemCommandHandlerTests
         var handler = BuildHandler([]);
 
         var result = await handler.Handle(
-            new CreateItemCommand("Towel", null, null, TrackingType.Unique, null, null),
+            new CreateItemCommand("Towel", null, null, TrackingType.Unique, null),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -71,7 +71,7 @@ public class CreateItemCommandHandlerTests
 
         // "Café" normalizes to "cafe", colliding with the existing item.
         var result = await handler.Handle(
-            new CreateItemCommand("Café", null, null, TrackingType.Quantity, "g", null),
+            new CreateItemCommand("Café", null, null, TrackingType.Quantity, "g"),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
@@ -86,7 +86,7 @@ public class CreateItemCommandHandlerTests
         _currentUser.HouseholdId.Returns((Guid?)null);
 
         var result = await handler.Handle(
-            new CreateItemCommand("Towel", null, null, TrackingType.Unique, null, null),
+            new CreateItemCommand("Towel", null, null, TrackingType.Unique, null),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();

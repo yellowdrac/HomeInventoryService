@@ -8,13 +8,13 @@ namespace HomeInventory.Application.Items.Commands.CreateItem;
 /// <summary>
 /// Creates an item. The server computes its <c>NormalizedName</c> (lower-cased, accent-stripped).
 /// For <see cref="TrackingType.Quantity"/> a <paramref name="Unit"/> is recommended; for
-/// <see cref="TrackingType.Unique"/> it is irrelevant.
+/// <see cref="TrackingType.Unique"/> it is irrelevant. The photo is managed separately through the
+/// item photo endpoints.
 /// </summary>
 public sealed record CreateItemCommand(
     string Name,
     string? Category,
     string? Barcode,
     TrackingType TrackingType,
-    string? Unit,
-    string? PhotoUrl)
+    string? Unit)
     : IRequest<Result<ItemDto>>;

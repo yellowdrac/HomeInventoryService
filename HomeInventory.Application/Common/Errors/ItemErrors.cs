@@ -17,4 +17,14 @@ public static class ItemErrors
         Error.Conflict(
             "Item.HasStock",
             "The item still has stock. Remove its stock lots before deleting it.");
+
+    public static readonly Error PhotoContentTypeNotAllowed =
+        Error.Validation(
+            "Item.PhotoContentTypeNotAllowed",
+            "The photo must be a JPEG, PNG or WebP image.");
+
+    public static readonly Error PhotoTooLarge =
+        Error.Validation(
+            "Item.PhotoTooLarge",
+            "The photo exceeds the maximum allowed size of 5 MB.");
 }

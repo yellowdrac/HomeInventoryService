@@ -48,13 +48,13 @@ public sealed class CreateItemCommandHandler : IRequestHandler<CreateItemCommand
             Barcode = request.Barcode,
             TrackingType = request.TrackingType,
             Unit = request.Unit,
-            PhotoUrl = request.PhotoUrl,
             CreatedAt = DateTime.UtcNow,
         };
 
         _context.Items.Add(item);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return item.ToDto(totalQuantity: 0);
+        // A newly created item never has a photo yet.
+        return item.ToDto(totalQuantity: 0, photoUrl: null);
     }
 }

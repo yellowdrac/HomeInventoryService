@@ -1,7 +1,9 @@
 using HomeInventory.Api.Extensions;
 using HomeInventory.Application.Items.Commands.CreateItem;
 using HomeInventory.Application.Items.Commands.DeleteItem;
+using HomeInventory.Application.Items.Commands.DeleteItemPhoto;
 using HomeInventory.Application.Items.Commands.UpdateItem;
+using HomeInventory.Application.Items.Commands.UploadItemPhoto;
 using HomeInventory.Application.Items.Queries.GetItemById;
 using HomeInventory.Application.Items.Queries.GetItems;
 using HomeInventory.Domain.Enums;
@@ -35,11 +37,22 @@ public static class ItemEndpoints
             Guid id, UpdateItemRequest body, ISender sender, CancellationToken ct) =>
             (await sender.Send(
                 new UpdateItemCommand(
-                    id, body.Name, body.Category, body.Barcode, body.TrackingType, body.Unit, body.PhotoUrl),
+                    id, body.Name, body.Category, body.Barcode, body.TrackingType, body.Unit),
                 ct)).ToHttpResult());
 
         group.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
             (await sender.Send(new DeleteItemCommand(id), ct)).ToHttpResult());
+
+        group.MapPost("/{id:guid}/photo", async (
+            Guid id, IFormFile file, ISender sender, CancellationToken ct) =>
+        {
+            await using var stream = file.OpenReadStream();
+            var command = new UploadItemPhotoCommand(id, stream, file.ContentType, file.Length);
+            return (await sender.Send(command, ct)).ToHttpResult();
+        }).DisableAntiforgery();
+
+        group.MapDelete("/{id:guid}/photo", async (Guid id, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new DeleteItemPhotoCommand(id), ct)).ToHttpResult());
 
         return app;
     }
@@ -51,5 +64,4 @@ public sealed record UpdateItemRequest(
     string? Category,
     string? Barcode,
     TrackingType TrackingType,
-    string? Unit,
-    string? PhotoUrl);
+    string? Unit);

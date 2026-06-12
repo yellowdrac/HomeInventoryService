@@ -12,11 +12,16 @@ public sealed class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand
 {
     private readonly ICurrentUser _currentUser;
     private readonly IApplicationDbContext _context;
+    private readonly IFileStorage _fileStorage;
 
-    public UpdateItemCommandHandler(ICurrentUser currentUser, IApplicationDbContext context)
+    public UpdateItemCommandHandler(
+        ICurrentUser currentUser,
+        IApplicationDbContext context,
+        IFileStorage fileStorage)
     {
         _currentUser = currentUser;
         _context = context;
+        _fileStorage = fileStorage;
     }
 
     public async Task<Result<ItemDto>> Handle(UpdateItemCommand request, CancellationToken cancellationToken)
@@ -57,7 +62,6 @@ public sealed class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand
         item.Barcode = request.Barcode;
         item.TrackingType = request.TrackingType;
         item.Unit = request.Unit;
-        item.PhotoUrl = request.PhotoUrl;
         item.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -66,6 +70,6 @@ public sealed class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand
             .Where(s => s.ItemId == item.Id && s.HouseholdId == householdId)
             .SumAsync(s => s.Quantity, cancellationToken);
 
-        return item.ToDto(totalQuantity);
+        return item.ToDto(totalQuantity, _fileStorage.GetPresignedReadUrlOrNull(item.PhotoUrl));
     }
 }

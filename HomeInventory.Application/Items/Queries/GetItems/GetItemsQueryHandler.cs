@@ -14,11 +14,16 @@ public sealed class GetItemsQueryHandler
 {
     private readonly ICurrentUser _currentUser;
     private readonly IApplicationDbContext _context;
+    private readonly IFileStorage _fileStorage;
 
-    public GetItemsQueryHandler(ICurrentUser currentUser, IApplicationDbContext context)
+    public GetItemsQueryHandler(
+        ICurrentUser currentUser,
+        IApplicationDbContext context,
+        IFileStorage fileStorage)
     {
         _currentUser = currentUser;
         _context = context;
+        _fileStorage = fileStorage;
     }
 
     public async Task<Result<PagedResult<ItemDto>>> Handle(
@@ -64,7 +69,9 @@ public sealed class GetItemsQueryHandler
         var totals = quantingByItem.ToDictionary(x => x.ItemId, x => x.Total);
 
         var dtos = pageItems
-            .Select(i => i.ToDto(totals.TryGetValue(i.Id, out var total) ? total : 0m))
+            .Select(i => i.ToDto(
+                totals.TryGetValue(i.Id, out var total) ? total : 0m,
+                _fileStorage.GetPresignedReadUrlOrNull(i.PhotoUrl)))
             .ToList();
 
         return new PagedResult<ItemDto>(dtos, request.Page, request.PageSize, totalCount);

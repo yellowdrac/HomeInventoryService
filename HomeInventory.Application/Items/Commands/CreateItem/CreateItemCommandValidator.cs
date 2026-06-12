@@ -21,8 +21,5 @@ public sealed class CreateItemCommandValidator : AbstractValidator<CreateItemCom
 
         RuleFor(x => x.Unit)
             .MaximumLength(32);
-
-        RuleFor(x => x.PhotoUrl)
-            .MaximumLength(2048);
     }
 }
