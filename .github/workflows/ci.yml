@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           # Honors the SDK version pinned in backend/global.json.
-          global-json-file: backend/global.json
+          global-json-file: global.json
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
