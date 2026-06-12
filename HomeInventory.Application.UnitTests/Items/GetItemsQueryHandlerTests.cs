@@ -14,6 +14,7 @@ public class GetItemsQueryHandlerTests
     private readonly Guid _householdId = Guid.NewGuid();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly IApplicationDbContext _context = Substitute.For<IApplicationDbContext>();
+    private readonly IFileStorage _fileStorage = Substitute.For<IFileStorage>();
 
     private GetItemsQueryHandler BuildHandler(List<Item> items, List<StockLot> stockLots)
     {
@@ -23,7 +24,7 @@ public class GetItemsQueryHandlerTests
         _context.StockLots.Returns(stockLotsDbSet);
         _currentUser.HouseholdId.Returns(_householdId);
 
-        return new GetItemsQueryHandler(_currentUser, _context);
+        return new GetItemsQueryHandler(_currentUser, _context, _fileStorage);
     }
 
     private Item Item(Guid id, string name, string normalized, string? category = null) => new()

@@ -13,7 +13,7 @@ public class CreateItemCommandValidatorTests
     public void Valid_command_passes()
     {
         var result = _validator.TestValidate(
-            new CreateItemCommand("Batteries", "Electronics", "123456", TrackingType.Quantity, "unit", null));
+            new CreateItemCommand("Batteries", "Electronics", "123456", TrackingType.Quantity, "unit"));
 
         result.ShouldNotHaveAnyValidationErrors();
     }
@@ -22,7 +22,7 @@ public class CreateItemCommandValidatorTests
     public void Empty_name_fails()
     {
         var result = _validator.TestValidate(
-            new CreateItemCommand("", null, null, TrackingType.Quantity, null, null));
+            new CreateItemCommand("", null, null, TrackingType.Quantity, null));
 
         result.ShouldHaveValidationErrorFor(x => x.Name);
     }
@@ -31,7 +31,7 @@ public class CreateItemCommandValidatorTests
     public void Out_of_range_tracking_type_fails()
     {
         var result = _validator.TestValidate(
-            new CreateItemCommand("Batteries", null, null, (TrackingType)42, null, null));
+            new CreateItemCommand("Batteries", null, null, (TrackingType)42, null));
 
         result.ShouldHaveValidationErrorFor(x => x.TrackingType);
     }

@@ -13,7 +13,7 @@ public class UpdateItemCommandValidatorTests
     public void Valid_command_passes()
     {
         var result = _validator.TestValidate(
-            new UpdateItemCommand(Guid.NewGuid(), "Batteries", null, null, TrackingType.Quantity, "unit", null));
+            new UpdateItemCommand(Guid.NewGuid(), "Batteries", null, null, TrackingType.Quantity, "unit"));
 
         result.ShouldNotHaveAnyValidationErrors();
     }
@@ -22,7 +22,7 @@ public class UpdateItemCommandValidatorTests
     public void Empty_id_fails()
     {
         var result = _validator.TestValidate(
-            new UpdateItemCommand(Guid.Empty, "Batteries", null, null, TrackingType.Quantity, null, null));
+            new UpdateItemCommand(Guid.Empty, "Batteries", null, null, TrackingType.Quantity, null));
 
         result.ShouldHaveValidationErrorFor(x => x.Id);
     }
@@ -31,7 +31,7 @@ public class UpdateItemCommandValidatorTests
     public void Empty_name_fails()
     {
         var result = _validator.TestValidate(
-            new UpdateItemCommand(Guid.NewGuid(), "", null, null, TrackingType.Quantity, null, null));
+            new UpdateItemCommand(Guid.NewGuid(), "", null, null, TrackingType.Quantity, null));
 
         result.ShouldHaveValidationErrorFor(x => x.Name);
     }

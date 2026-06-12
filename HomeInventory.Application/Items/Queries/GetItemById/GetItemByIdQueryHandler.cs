@@ -11,11 +11,16 @@ public sealed class GetItemByIdQueryHandler : IRequestHandler<GetItemByIdQuery, 
 {
     private readonly ICurrentUser _currentUser;
     private readonly IApplicationDbContext _context;
+    private readonly IFileStorage _fileStorage;
 
-    public GetItemByIdQueryHandler(ICurrentUser currentUser, IApplicationDbContext context)
+    public GetItemByIdQueryHandler(
+        ICurrentUser currentUser,
+        IApplicationDbContext context,
+        IFileStorage fileStorage)
     {
         _currentUser = currentUser;
         _context = context;
+        _fileStorage = fileStorage;
     }
 
     public async Task<Result<ItemDetailDto>> Handle(
@@ -62,7 +67,7 @@ public sealed class GetItemByIdQueryHandler : IRequestHandler<GetItemByIdQuery, 
             item.Barcode,
             item.TrackingType,
             item.Unit,
-            item.PhotoUrl,
+            _fileStorage.GetPresignedReadUrlOrNull(item.PhotoUrl),
             totalQuantity,
             lotDtos);
     }

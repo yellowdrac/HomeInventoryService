@@ -4,7 +4,7 @@ namespace HomeInventory.Application.Items.Common;
 
 internal static class ItemMappingExtensions
 {
-    public static ItemDto ToDto(this Item item, decimal totalQuantity) =>
+    public static ItemDto ToDto(this Item item, decimal totalQuantity, string? photoUrl) =>
         new(
             item.Id,
             item.Name,
@@ -12,7 +12,7 @@ internal static class ItemMappingExtensions
             item.Barcode,
             item.TrackingType,
             item.Unit,
-            item.PhotoUrl,
+            photoUrl,
             totalQuantity);
 
     public static StockLotDto ToDto(

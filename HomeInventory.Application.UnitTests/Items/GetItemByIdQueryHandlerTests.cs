@@ -16,6 +16,7 @@ public class GetItemByIdQueryHandlerTests
     private readonly Guid _itemId = Guid.NewGuid();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly IApplicationDbContext _context = Substitute.For<IApplicationDbContext>();
+    private readonly IFileStorage _fileStorage = Substitute.For<IFileStorage>();
 
     private GetItemByIdQueryHandler BuildHandler(
         List<Item> items, List<Location> locations, List<StockLot> stockLots)
@@ -28,7 +29,7 @@ public class GetItemByIdQueryHandlerTests
         _context.StockLots.Returns(stockLotsDbSet);
         _currentUser.HouseholdId.Returns(_householdId);
 
-        return new GetItemByIdQueryHandler(_currentUser, _context);
+        return new GetItemByIdQueryHandler(_currentUser, _context, _fileStorage);
     }
 
     [Fact]
@@ -94,5 +95,41 @@ public class GetItemByIdQueryHandlerTests
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ItemErrors.NotFound);
+    }
+
+    [Fact]
+    public async Task Returns_a_presigned_url_built_from_the_stored_key_when_a_photo_is_set()
+    {
+        const string key = "households/h/items/i/photo.jpg";
+        var item = new Item
+        {
+            Id = _itemId, HouseholdId = _householdId, Name = "Batteries",
+            NormalizedName = "batteries", TrackingType = TrackingType.Quantity, PhotoUrl = key,
+        };
+        _fileStorage.GetPresignedReadUrl(key, Arg.Any<TimeSpan>()).Returns("https://signed.example/photo");
+        var handler = BuildHandler([item], [], []);
+
+        var result = await handler.Handle(new GetItemByIdQuery(_itemId), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PhotoUrl.Should().Be("https://signed.example/photo");
+        _fileStorage.Received(1).GetPresignedReadUrl(key, Arg.Any<TimeSpan>());
+    }
+
+    [Fact]
+    public async Task Photo_url_is_null_and_storage_is_not_called_when_there_is_no_photo()
+    {
+        var item = new Item
+        {
+            Id = _itemId, HouseholdId = _householdId, Name = "Batteries",
+            NormalizedName = "batteries", TrackingType = TrackingType.Quantity,
+        };
+        var handler = BuildHandler([item], [], []);
+
+        var result = await handler.Handle(new GetItemByIdQuery(_itemId), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PhotoUrl.Should().BeNull();
+        _fileStorage.DidNotReceive().GetPresignedReadUrl(Arg.Any<string>(), Arg.Any<TimeSpan>());
     }
 }
