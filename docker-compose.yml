@@ -40,7 +40,8 @@ services:
       # Local-only dev signing key (must be >= 32 chars). Use a real secret in production.
       Jwt__SigningKey: "local-development-signing-key-change-me-please-32"
       # Allow the local frontend dev server (Vite on :3000) to call the API.
-      Cors__AllowedOrigins__0: "http://localhost:3000"
+      # Comma-separated list; add more origins as "https://a.com,https://b.com".
+      Cors__AllowedOrigins: "http://localhost:3000"
       RUN_MIGRATIONS_ON_STARTUP: "true"
     ports:
       - "8080:8080"

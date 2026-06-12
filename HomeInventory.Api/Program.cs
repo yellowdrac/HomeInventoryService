@@ -2,6 +2,7 @@ using HomeInventory.Api;
 using HomeInventory.Api.Endpoints;
 using HomeInventory.Api.Extensions;
 using HomeInventory.Application;
+using HomeInventory.Application.Common.Text;
 using HomeInventory.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi;
@@ -20,11 +21,12 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // JWT bearer authentication + authorization.
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// CORS for the frontend. Allowed origins come from configuration
-// (Cors:AllowedOrigins, e.g. the env var Cors__AllowedOrigins__0 in production)
-// and fall back to the local dev frontend.
-var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
-if (corsOrigins is null || corsOrigins.Length == 0)
+// CORS for the frontend. Allowed origins come from configuration as a comma-separated
+// string ("Cors:AllowedOrigins", e.g. the env var Cors__AllowedOrigins in production) and
+// fall back to the local dev frontend when not configured. The app authenticates with
+// Bearer tokens in the Authorization header (not cookies), so credentials are not allowed.
+var corsOrigins = CommaSeparatedValues.Parse(builder.Configuration["Cors:AllowedOrigins"]);
+if (corsOrigins.Length == 0)
 {
     corsOrigins = ["http://localhost:3000"];
 }

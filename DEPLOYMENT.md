@@ -37,7 +37,7 @@ Set these as environment variables on the Render service. Never commit them.
 | `Storage__S3__Region` | S3 region. |
 | `Storage__S3__AccessKeyId` | S3 access key id. |
 | `Storage__S3__SecretAccessKey` | S3 secret access key. |
-| `Cors__AllowedOrigins__0` | Production frontend origin allowed by CORS (add `__1`, `__2`, ... for more). |
+| `Cors__AllowedOrigins` | Comma-separated list of frontend origins allowed by CORS (e.g. `https://your-app.vercel.app,https://custom.domain`). |
 | `RUN_MIGRATIONS_ON_STARTUP` | `true` to apply EF Core migrations on startup. |
 | `PORT` | Port to listen on. Render sets this automatically; defaults to `8080` if unset. |
 
@@ -48,9 +48,10 @@ Notes:
 
 ### CORS
 
-The backend only allows the origins listed in `Cors__AllowedOrigins__*`. In production you
-**must** add the frontend's Vercel domain (for example `https://your-app.vercel.app`, plus
-any custom domain), otherwise the browser will block API calls. The frontend also needs
+The backend only allows the origins listed in `Cors__AllowedOrigins` (a comma-separated
+list). In production you **must** add the frontend's Vercel domain (for example
+`https://your-app.vercel.app`, plus any custom domain), otherwise the browser will block
+API calls. The frontend also needs
 **HTTPS** for its in-app QR scanner (camera access requires a secure context) — Vercel
 provides this automatically.
 
