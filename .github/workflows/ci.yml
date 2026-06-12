@@ -1,0 +1,41 @@
+# Backend CI: restore, build and test the .NET solution on every PR and push to main.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Honors the SDK version pinned in backend/global.json.
+          global-json-file: backend/global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('backend/**/*.csproj', 'backend/Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore HomeInventory.sln
+
+      - name: Build
+        run: dotnet build HomeInventory.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test HomeInventory.sln --configuration Release --no-build --verbosity normal

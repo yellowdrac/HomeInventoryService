@@ -1,0 +1,59 @@
+# Backend CD: build the backend image and publish it to GitHub Container Registry (GHCR)
+# on every push to main. Optionally triggers a Render deploy hook if configured.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+# Required to push images to GHCR using the built-in GITHUB_TOKEN.
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  backend-image:
+    name: Build and push backend image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/homeinventory-backend:latest
+            ghcr.io/${{ github.repository_owner }}/homeinventory-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Optional deploy step: if the RENDER_DEPLOY_HOOK_URL secret is set, hit the hook to
+  # trigger a Render deployment of the freshly pushed image.
+  #
+  # Alternative (no hook needed): connect this repository directly in the Render
+  # dashboard so Render auto-deploys on every push to main. In that case this job can
+  # be removed.
+  trigger-render-deploy:
+    name: Trigger Render deploy (optional)
+    needs: backend-image
+    runs-on: ubuntu-latest
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Call Render deploy hook
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL"
