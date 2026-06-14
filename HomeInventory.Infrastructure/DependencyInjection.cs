@@ -1,7 +1,10 @@
 using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
+using HomeInventory.Application.Assistant;
+using HomeInventory.Application.Assistant.Llm;
 using HomeInventory.Application.Common.Abstractions;
+using HomeInventory.Infrastructure.Assistant;
 using HomeInventory.Infrastructure.Identity;
 using HomeInventory.Infrastructure.Persistence;
 using HomeInventory.Infrastructure.Storage;
@@ -77,8 +80,64 @@ public static class DependencyInjection
         });
         services.AddSingleton<IFileStorage, S3FileStorage>();
 
+        AddInventoryAssistant(services, configuration);
+
         return services;
     }
+
+    // Inventory assistant: cost knobs (Application options), per-user rate limiter and the concrete
+    // LLM provider client. The provider, API key and model come from the 'Assistant' section
+    // (env/user-secrets); only the LLM client is provider-specific, so swapping providers is a change
+    // confined to this method.
+    private static void AddInventoryAssistant(IServiceCollection services, IConfiguration configuration)
+    {
+        var assistantOptions = new AssistantOptions
+        {
+            MaxResponseTokens = configuration.GetValue("Assistant:MaxResponseTokens", 1024),
+            MaxToolIterations = configuration.GetValue("Assistant:MaxToolIterations", 5),
+            RateLimitPerMinute = configuration.GetValue("Assistant:RateLimitPerMinute", 10),
+        };
+        services.AddSingleton(assistantOptions);
+
+        var provider = configuration["Assistant:Provider"] ?? "Anthropic";
+        var isOpenAiCompatible = IsOpenAiCompatible(provider);
+
+        var providerOptions = new AssistantProviderOptions
+        {
+            Provider = provider,
+            // The API key may arrive as Assistant:ApiKey (env var Assistant__ApiKey, auto-translated)
+            // or as a literal 'Assistant__ApiKey' key in user-secrets (which keeps the '__').
+            ApiKey = configuration["Assistant:ApiKey"]
+                ?? configuration["Assistant__ApiKey"]
+                ?? string.Empty,
+            Model = configuration["Assistant:Model"]
+                ?? (isOpenAiCompatible ? "gemini-2.5-flash" : "claude-haiku-4-5"),
+            // OpenAI-compatible providers vary, so the URL must be supplied; only the Anthropic
+            // first-party endpoint has a sensible built-in default.
+            BaseUrl = configuration["Assistant:BaseUrl"]
+                ?? (isOpenAiCompatible ? string.Empty : "https://api.anthropic.com/v1/messages"),
+            AnthropicVersion = configuration["Assistant:AnthropicVersion"] ?? "2023-06-01",
+        };
+        services.AddSingleton(providerOptions);
+
+        services.AddSingleton<IAssistantRateLimiter, InMemoryAssistantRateLimiter>();
+
+        // Select the concrete provider client. Adding another provider means another branch here only;
+        // the Application layer (orchestrator, tools, command) is untouched.
+        if (isOpenAiCompatible)
+        {
+            services.AddHttpClient<ILlmChatClient, OpenAiCompatibleChatClient>();
+        }
+        else
+        {
+            services.AddHttpClient<ILlmChatClient, AnthropicChatClient>();
+        }
+    }
+
+    // Anything that isn't first-party Anthropic is treated as an OpenAI-compatible /chat/completions
+    // provider (Gemini's OpenAI endpoint, Groq, Cerebras, OpenRouter, Mistral, DeepSeek, Ollama, ...).
+    private static bool IsOpenAiCompatible(string provider) =>
+        !provider.Equals("Anthropic", StringComparison.OrdinalIgnoreCase);
 
     // Reads an S3 setting accepting both the ':' separator (Storage:S3:Name, produced by the
     // environment-variable provider from Storage__S3__Name) and the literal '__' separator stored
