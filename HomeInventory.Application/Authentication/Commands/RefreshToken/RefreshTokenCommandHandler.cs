@@ -33,14 +33,16 @@ public sealed class RefreshTokenCommandHandler
             return Result.Failure<AuthenticationResponse>(consumed.Error);
         }
 
-        var user = await _identityService.FindByIdAsync(consumed.Value, cancellationToken);
+        var sessionExpiresAtUtc = consumed.Value.SessionExpiresAtUtc;
+
+        var user = await _identityService.FindByIdAsync(consumed.Value.UserId, cancellationToken);
         if (user is null)
         {
             return Result.Failure<AuthenticationResponse>(AuthenticationErrors.InvalidRefreshToken);
         }
 
-        var accessToken = _tokenService.CreateAccessToken(user);
-        var refreshToken = await _refreshTokenService.IssueAsync(user.Id, cancellationToken);
+        var accessToken = _tokenService.CreateAccessToken(user, sessionExpiresAtUtc);
+        var refreshToken = await _refreshTokenService.IssueRotatedAsync(user.Id, sessionExpiresAtUtc, cancellationToken);
 
         return AuthenticationResponse.From(accessToken, refreshToken);
     }

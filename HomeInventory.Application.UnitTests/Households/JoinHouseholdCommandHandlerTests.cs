@@ -26,13 +26,14 @@ public class JoinHouseholdCommandHandlerTests
         var householdsDbSet = households.BuildMockDbSet();
         _context.Households.Returns(householdsDbSet);
         _currentUser.UserId.Returns(_userId);
+        _currentUser.SessionExpiresAtUtc.Returns(DateTime.UtcNow.AddDays(7));
         _identityService.FindByIdAsync(_userId, Arg.Any<CancellationToken>())
             .Returns(new AuthUser(_userId, "member@example.com", "Member", null));
         _identityService.SetHouseholdAsync(_userId, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(Result.Success());
-        _tokenService.CreateAccessToken(Arg.Any<AuthUser>())
-            .Returns(new AccessToken("access", DateTime.UtcNow.AddMinutes(15)));
-        _refreshTokenService.IssueAsync(_userId, Arg.Any<CancellationToken>())
+        _tokenService.CreateAccessToken(Arg.Any<AuthUser>(), Arg.Any<DateTime>())
+            .Returns(new AccessToken("access", DateTime.UtcNow.AddMinutes(60)));
+        _refreshTokenService.IssueRotatedAsync(_userId, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(new IssuedRefreshToken("refresh", DateTime.UtcNow.AddDays(7)));
 
         return new JoinHouseholdCommandHandler(

@@ -28,4 +28,15 @@ public sealed class CurrentUser : ICurrentUser
         Guid.TryParse(Principal?.FindFirstValue(AppClaims.HouseholdId), out var householdId)
             ? householdId
             : null;
+
+    public DateTime SessionExpiresAtUtc
+    {
+        get
+        {
+            var raw = Principal?.FindFirstValue(AppClaims.SessionExp);
+            return long.TryParse(raw, out var seconds)
+                ? DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime
+                : DateTime.MinValue;
+        }
+    }
 }

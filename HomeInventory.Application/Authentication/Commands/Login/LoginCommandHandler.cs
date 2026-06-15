@@ -37,8 +37,8 @@ public sealed class LoginCommandHandler
         }
 
         var user = credentials.Value;
-        var accessToken = _tokenService.CreateAccessToken(user);
         var refreshToken = await _refreshTokenService.IssueAsync(user.Id, cancellationToken);
+        var accessToken = _tokenService.CreateAccessToken(user, refreshToken.ExpiresAtUtc);
 
         return AuthenticationResponse.From(accessToken, refreshToken);
     }

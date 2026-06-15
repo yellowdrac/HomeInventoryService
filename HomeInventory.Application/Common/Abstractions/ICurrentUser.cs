@@ -14,4 +14,10 @@ public interface ICurrentUser
     /// joined one. A null value means scoped data is filtered out by the global query filter.
     /// </summary>
     Guid? HouseholdId { get; }
+
+    /// <summary>
+    /// The UTC timestamp at which the entire login session expires. Derived from the
+    /// <c>sessionExp</c> JWT claim and never extended by token rotation.
+    /// </summary>
+    DateTime SessionExpiresAtUtc { get; }
 }
