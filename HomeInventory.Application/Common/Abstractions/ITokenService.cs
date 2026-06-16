@@ -9,8 +9,9 @@ namespace HomeInventory.Application.Common.Abstractions;
 public interface ITokenService
 {
     /// <summary>
-    /// Creates a signed access token carrying the <c>sub</c>, <c>email</c> and, when present,
-    /// <c>householdId</c> claims.
+    /// Creates a signed access token carrying the <c>sub</c>, <c>email</c>, <c>sessionExp</c>
+    /// and, when present, <c>householdId</c> claims. <paramref name="sessionExpiresAtUtc"/> is
+    /// the hard end-of-session timestamp that must not roll forward on token rotation.
     /// </summary>
-    AccessToken CreateAccessToken(AuthUser user);
+    AccessToken CreateAccessToken(AuthUser user, DateTime sessionExpiresAtUtc);
 }

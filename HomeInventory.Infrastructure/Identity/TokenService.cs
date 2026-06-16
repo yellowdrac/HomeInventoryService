@@ -28,7 +28,7 @@ public sealed class TokenService : ITokenService
         _signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
     }
 
-    public AccessToken CreateAccessToken(AuthUser user)
+    public AccessToken CreateAccessToken(AuthUser user, DateTime sessionExpiresAtUtc)
     {
         var expiresAtUtc = DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes);
 
@@ -37,6 +37,7 @@ public sealed class TokenService : ITokenService
             [AppClaims.Subject] = user.Id.ToString(),
             [AppClaims.Email] = user.Email,
             [JwtRegisteredClaimNames.Jti] = Guid.NewGuid().ToString(),
+            [AppClaims.SessionExp] = new DateTimeOffset(sessionExpiresAtUtc, TimeSpan.Zero).ToUnixTimeSeconds(),
         };
 
         if (user.HouseholdId is { } householdId)

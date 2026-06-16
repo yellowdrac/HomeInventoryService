@@ -24,39 +24,43 @@ public sealed class RefreshTokenService : IRefreshTokenService
         _options = options.Value;
     }
 
-    public async Task<IssuedRefreshToken> IssueAsync(Guid userId, CancellationToken cancellationToken)
+    public Task<IssuedRefreshToken> IssueAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var expiresAtUtc = DateTime.UtcNow.AddDays(_options.RefreshTokenDays);
+        var sessionExpiresAtUtc = DateTime.UtcNow.AddDays(_options.RefreshTokenDays);
+        return IssueRotatedAsync(userId, sessionExpiresAtUtc, cancellationToken);
+    }
 
+    public async Task<IssuedRefreshToken> IssueRotatedAsync(Guid userId, DateTime sessionExpiresAtUtc, CancellationToken cancellationToken)
+    {
         var refreshToken = new RefreshToken
         {
             Id = Guid.NewGuid(),
             Token = GenerateToken(),
             UserId = userId,
             CreatedAtUtc = DateTime.UtcNow,
-            ExpiresAtUtc = expiresAtUtc,
+            ExpiresAtUtc = sessionExpiresAtUtc,
         };
 
         _context.RefreshTokens.Add(refreshToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new IssuedRefreshToken(refreshToken.Token, expiresAtUtc);
+        return new IssuedRefreshToken(refreshToken.Token, sessionExpiresAtUtc);
     }
 
-    public async Task<Result<Guid>> ValidateAndConsumeAsync(string refreshToken, CancellationToken cancellationToken)
+    public async Task<Result<ConsumedRefreshToken>> ValidateAndConsumeAsync(string refreshToken, CancellationToken cancellationToken)
     {
         var stored = await _context.RefreshTokens
             .FirstOrDefaultAsync(t => t.Token == refreshToken, cancellationToken);
 
         if (stored is null || !stored.IsActive)
         {
-            return Result.Failure<Guid>(AuthenticationErrors.InvalidRefreshToken);
+            return Result.Failure<ConsumedRefreshToken>(AuthenticationErrors.InvalidRefreshToken);
         }
 
         stored.RevokedAtUtc = DateTime.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
 
-        return stored.UserId;
+        return new ConsumedRefreshToken(stored.UserId, stored.ExpiresAtUtc);
     }
 
     private static string GenerateToken() =>

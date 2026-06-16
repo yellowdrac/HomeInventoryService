@@ -38,8 +38,8 @@ public sealed class RegisterCommandHandler
         }
 
         var user = registration.Value;
-        var accessToken = _tokenService.CreateAccessToken(user);
         var refreshToken = await _refreshTokenService.IssueAsync(user.Id, cancellationToken);
+        var accessToken = _tokenService.CreateAccessToken(user, refreshToken.ExpiresAtUtc);
 
         return AuthenticationResponse.From(accessToken, refreshToken);
     }

@@ -17,4 +17,6 @@ public class CurrentUserStub : ICurrentUser
     public Guid UserId => DevelopmentUserId;
 
     public Guid? HouseholdId => DevelopmentHouseholdId;
+
+    public DateTime SessionExpiresAtUtc => DateTime.MaxValue;
 }

@@ -61,9 +61,10 @@ public sealed class JoinHouseholdCommandHandler
             return Result.Failure<AuthenticationResponse>(assignment.Error);
         }
 
+        var sessionExpiresAtUtc = _currentUser.SessionExpiresAtUtc;
         var updatedUser = user with { HouseholdId = household.Id };
-        var accessToken = _tokenService.CreateAccessToken(updatedUser);
-        var refreshToken = await _refreshTokenService.IssueAsync(userId, cancellationToken);
+        var accessToken = _tokenService.CreateAccessToken(updatedUser, sessionExpiresAtUtc);
+        var refreshToken = await _refreshTokenService.IssueRotatedAsync(userId, sessionExpiresAtUtc, cancellationToken);
 
         return AuthenticationResponse.From(accessToken, refreshToken);
     }
