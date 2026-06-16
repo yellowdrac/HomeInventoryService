@@ -64,6 +64,12 @@ public sealed class OpenAiCompatibleChatClient : ILlmChatClient
                 "OpenAI-compatible provider returned {StatusCode}: {Body}",
                 (int)response.StatusCode,
                 payload);
+
+            if ((int)response.StatusCode == 429)
+            {
+                throw new ProviderRateLimitedException();
+            }
+
             throw new HttpRequestException(
                 $"The assistant provider returned status {(int)response.StatusCode}.");
         }

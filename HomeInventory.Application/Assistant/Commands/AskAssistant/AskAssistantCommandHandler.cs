@@ -1,4 +1,5 @@
 using HomeInventory.Application.Assistant.Common;
+using HomeInventory.Application.Assistant.Llm;
 using HomeInventory.Application.Common.Abstractions;
 using HomeInventory.Application.Common.Errors;
 using HomeInventory.Application.Common.Results;
@@ -51,6 +52,10 @@ public sealed class AskAssistantCommandHandler
                 cancellationToken);
 
             return response;
+        }
+        catch (ProviderRateLimitedException)
+        {
+            return Result.Failure<ChatResponse>(AssistantErrors.RateLimited);
         }
         catch (OperationCanceledException)
         {
