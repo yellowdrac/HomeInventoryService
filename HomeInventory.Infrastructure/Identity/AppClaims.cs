@@ -8,4 +8,7 @@ public static class AppClaims
     public const string Email = "email";
 
     public const string HouseholdId = "householdId";
+
+    /// <summary>Unix timestamp (seconds) at which the entire login session expires.</summary>
+    public const string SessionExp = "sessionExp";
 }
