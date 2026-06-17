@@ -15,7 +15,7 @@ public class InventoryAssistantTests
     private readonly AssistantOptions _options = new() { MaxToolIterations = 5, MaxResponseTokens = 512 };
 
     private InventoryAssistant BuildAssistant(params IAssistantTool[] tools) =>
-        new(_client, tools, _options);
+        new(_client, tools, _options, new ProposedActionsCollector());
 
     /// <summary>Queues sequential LLM replies and records every request the orchestrator sends.</summary>
     private List<LlmRequest> StubLlm(params LlmResponse[] replies)

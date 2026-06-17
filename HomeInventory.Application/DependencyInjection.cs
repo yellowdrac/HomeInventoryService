@@ -1,5 +1,6 @@
 using FluentValidation;
 using HomeInventory.Application.Assistant;
+using HomeInventory.Application.Assistant.Common;
 using HomeInventory.Application.Assistant.Tools;
 using HomeInventory.Application.Common.Abstractions;
 using HomeInventory.Application.Common.Behaviors;
@@ -29,15 +30,20 @@ public static class DependencyInjection
         // Scoped: the stock service stages mutations on the per-request DbContext.
         services.AddScoped<IStockService, StockService>();
 
-        // Inventory assistant: the read-only tools (each wrapping a household-scoped MediatR query)
-        // and the orchestrator. The LLM client, options and rate limiter are registered in
-        // Infrastructure so the provider can be swapped without touching this layer.
+        // Inventory assistant: read-only tools + write-proposal tools + the orchestrator.
+        // The collector is Scoped so all proposal tools within one request share the same instance
+        // and the orchestrator can read accumulated proposals after the tool loop completes.
+        services.AddScoped<IProposedActionsCollector, ProposedActionsCollector>();
         services.AddScoped<IAssistantTool, SearchInventoryTool>();
         services.AddScoped<IAssistantTool, GetItemDetailsTool>();
         services.AddScoped<IAssistantTool, GetLocationContentsTool>();
         services.AddScoped<IAssistantTool, ListLocationsTool>();
         services.AddScoped<IAssistantTool, GetExpiringStockTool>();
         services.AddScoped<IAssistantTool, GetInventorySummaryTool>();
+        services.AddScoped<IAssistantTool, ProposeCreateLocationTool>();
+        services.AddScoped<IAssistantTool, ProposeCreateItemTool>();
+        services.AddScoped<IAssistantTool, ProposeAddStockTool>();
+        services.AddScoped<IAssistantTool, ProposeMoveStockTool>();
         services.AddScoped<IInventoryAssistant, InventoryAssistant>();
 
         return services;

@@ -21,14 +21,17 @@ public sealed class InventoryAssistant : IInventoryAssistant
     private readonly IReadOnlyDictionary<string, IAssistantTool> _tools;
     private readonly IReadOnlyList<LlmToolDefinition> _toolDefinitions;
     private readonly AssistantOptions _options;
+    private readonly IProposedActionsCollector _collector;
 
     public InventoryAssistant(
         ILlmChatClient client,
         IEnumerable<IAssistantTool> tools,
-        AssistantOptions options)
+        AssistantOptions options,
+        IProposedActionsCollector collector)
     {
         _client = client;
         _options = options;
+        _collector = collector;
         _tools = tools.ToDictionary(t => t.Name);
         _toolDefinitions = _tools.Values
             .Select(t => new LlmToolDefinition(t.Name, t.Description, t.ParametersSchema))
@@ -65,7 +68,7 @@ public sealed class InventoryAssistant : IInventoryAssistant
 
             if (!response.RequiresToolExecution)
             {
-                return new ChatResponse(response.Text ?? string.Empty, Deduplicate(references));
+                return BuildResponse(response.Text ?? string.Empty, references);
             }
 
             // Record the assistant's tool-call turn, then run each requested tool and feed the
@@ -85,7 +88,7 @@ public sealed class InventoryAssistant : IInventoryAssistant
         }
 
         // The model never settled on an answer within the iteration budget.
-        return new ChatResponse(IterationLimitAnswer, Deduplicate(references));
+        return BuildResponse(IterationLimitAnswer, references);
     }
 
     private async Task<AssistantToolResult> ExecuteToolAsync(
@@ -113,6 +116,12 @@ public sealed class InventoryAssistant : IInventoryAssistant
         }
 
         return await tool.ExecuteAsync(arguments, cancellationToken);
+    }
+
+    private ChatResponse BuildResponse(string answer, List<AssistantReference> references)
+    {
+        var actions = _collector.Actions.Count > 0 ? _collector.Actions : null;
+        return new ChatResponse(answer, Deduplicate(references), actions, _collector.ClarificationQuestion);
     }
 
     private static IReadOnlyList<AssistantReference> Deduplicate(

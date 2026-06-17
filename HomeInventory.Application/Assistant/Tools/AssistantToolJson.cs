@@ -56,4 +56,21 @@ public static class AssistantToolJson
         var text = GetString(arguments, name);
         return Guid.TryParse(text, out var id) ? id : null;
     }
+
+    /// <summary>Reads a decimal property, tolerating numbers passed as JSON strings.</summary>
+    public static decimal? GetDecimal(JsonElement arguments, string name)
+    {
+        if (arguments.ValueKind != JsonValueKind.Object
+            || !arguments.TryGetProperty(name, out var value))
+        {
+            return null;
+        }
+
+        return value.ValueKind switch
+        {
+            JsonValueKind.Number when value.TryGetDecimal(out var number) => number,
+            JsonValueKind.String when decimal.TryParse(value.GetString(), out var parsed) => parsed,
+            _ => null,
+        };
+    }
 }
