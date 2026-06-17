@@ -40,7 +40,7 @@ public sealed class ExpirationNotificationWorker : BackgroundService
                 _logger.LogError(ex, "Unhandled error in ExpirationNotificationWorker.");
             }
 
-            await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+            await Task.Delay(TimeSpan.FromHours(12), stoppingToken);
         }
     }
 
