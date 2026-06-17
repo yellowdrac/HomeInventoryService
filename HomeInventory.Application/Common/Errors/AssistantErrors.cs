@@ -12,4 +12,8 @@ public static class AssistantErrors
     public static readonly Error Unavailable = Error.Failure(
         "Assistant.Unavailable",
         "The assistant is temporarily unavailable. Please try again later.");
+
+    public static readonly Error InvalidAction = Error.Validation(
+        "Assistant.InvalidAction",
+        "The action could not be executed. Please verify all required fields and try again.");
 }

@@ -1,5 +1,6 @@
 using HomeInventory.Api.Extensions;
 using HomeInventory.Application.Assistant.Commands.AskAssistant;
+using HomeInventory.Application.Assistant.Commands.ExecuteAssistantAction;
 using HomeInventory.Application.Assistant.Common;
 using MediatR;
 
@@ -17,6 +18,12 @@ public static class AssistantEndpoints
             CancellationToken ct) =>
             (await sender.Send(
                 new AskAssistantCommand(body.Message, body.History), ct)).ToHttpResult());
+
+        group.MapPost("/execute", async (
+            ExecuteAssistantActionCommand body,
+            ISender sender,
+            CancellationToken ct) =>
+            (await sender.Send(body, ct)).ToHttpResult());
 
         return app;
     }

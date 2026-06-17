@@ -13,7 +13,7 @@ public class AssistantToolRegistrationTests
         ["add", "create", "update", "delete", "move", "consume", "discard", "remove", "set", "join"];
 
     [Fact]
-    public void Only_the_read_only_tools_are_registered()
+    public void All_expected_tools_are_registered()
     {
         using var provider = new ServiceCollection().AddLogging().AddApplication().BuildServiceProvider();
         using var scope = provider.CreateScope();
@@ -22,6 +22,7 @@ public class AssistantToolRegistrationTests
             .Select(t => t.Name)
             .ToList();
 
+        // Read-only tools (Phase 10) + proposal tools (Phase 11, each prefixed with "propose_").
         names.Should().BeEquivalentTo(
         [
             "search_inventory",
@@ -30,6 +31,10 @@ public class AssistantToolRegistrationTests
             "list_locations",
             "get_expiring_stock",
             "get_inventory_summary",
+            "propose_create_location",
+            "propose_create_item",
+            "propose_add_stock",
+            "propose_move_stock",
         ]);
     }
 
