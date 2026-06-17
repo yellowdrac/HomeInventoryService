@@ -20,5 +20,9 @@ public interface IApplicationDbContext
 
     DbSet<Movement> Movements { get; }
 
+    DbSet<NotificationSettings> NotificationSettings { get; }
+
+    DbSet<PushSubscription> PushSubscriptions { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

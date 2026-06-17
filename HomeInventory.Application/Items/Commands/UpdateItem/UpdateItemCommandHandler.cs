@@ -62,6 +62,7 @@ public sealed class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand
         item.Barcode = request.Barcode;
         item.TrackingType = request.TrackingType;
         item.Unit = request.Unit;
+        item.MinimumQuantity = request.MinimumQuantity;
         item.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);

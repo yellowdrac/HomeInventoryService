@@ -49,6 +49,41 @@ public sealed class GetItemsQueryHandler
             query = query.Where(i => i.Category == request.Category);
         }
 
+        if (request.BelowMinimum == true)
+        {
+            // Resolve below-minimum item IDs in two queries, then inject an IN-clause so that
+            // subsequent totalCount and pagination operate on the already-filtered set.
+            var thresholds = await query
+                .Where(i => i.MinimumQuantity != null)
+                .Select(i => new { i.Id, i.MinimumQuantity })
+                .ToListAsync(cancellationToken);
+
+            if (thresholds.Count == 0)
+            {
+                return new PagedResult<ItemDto>([], request.Page, request.PageSize, 0);
+            }
+
+            var thresholdIds = thresholds.Select(t => t.Id).ToList();
+
+            var stockTotals = await _context.StockLots
+                .Where(s => s.HouseholdId == householdId && thresholdIds.Contains(s.ItemId))
+                .GroupBy(s => s.ItemId)
+                .Select(g => new { ItemId = g.Key, Total = g.Sum(s => s.Quantity) })
+                .ToDictionaryAsync(x => x.ItemId, x => (decimal)x.Total, cancellationToken);
+
+            var belowIds = thresholds
+                .Where(t => (stockTotals.TryGetValue(t.Id, out var total) ? total : 0m) < t.MinimumQuantity!.Value)
+                .Select(t => t.Id)
+                .ToHashSet();
+
+            if (belowIds.Count == 0)
+            {
+                return new PagedResult<ItemDto>([], request.Page, request.PageSize, 0);
+            }
+
+            query = query.Where(i => belowIds.Contains(i.Id));
+        }
+
         var totalCount = await query.CountAsync(cancellationToken);
 
         var pageItems = await query

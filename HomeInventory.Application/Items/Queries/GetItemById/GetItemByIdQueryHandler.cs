@@ -69,6 +69,7 @@ public sealed class GetItemByIdQueryHandler : IRequestHandler<GetItemByIdQuery, 
             item.Unit,
             _fileStorage.GetPresignedReadUrlOrNull(item.PhotoUrl),
             totalQuantity,
+            item.MinimumQuantity,
             lotDtos);
     }
 }

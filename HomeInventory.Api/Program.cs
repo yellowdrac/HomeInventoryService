@@ -98,5 +98,6 @@ app.MapSearchEndpoints();
 app.MapExpirationEndpoints();
 app.MapDashboardEndpoints();
 app.MapAssistantEndpoints();
+app.MapNotificationEndpoints();
 
 app.Run();

@@ -48,6 +48,7 @@ public sealed class CreateItemCommandHandler : IRequestHandler<CreateItemCommand
             Barcode = request.Barcode,
             TrackingType = request.TrackingType,
             Unit = request.Unit,
+            MinimumQuantity = request.MinimumQuantity,
             CreatedAt = DateTime.UtcNow,
         };
 

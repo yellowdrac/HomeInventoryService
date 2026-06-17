@@ -22,10 +22,11 @@ public static class ItemEndpoints
             string? category,
             int? page,
             int? pageSize,
+            bool? belowMinimum,
             ISender sender,
             CancellationToken ct) =>
             (await sender.Send(
-                new GetItemsQuery(nameFilter, category, page ?? 1, pageSize ?? 20), ct)).ToHttpResult());
+                new GetItemsQuery(nameFilter, category, page ?? 1, pageSize ?? 20, belowMinimum), ct)).ToHttpResult());
 
         group.MapGet("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
             (await sender.Send(new GetItemByIdQuery(id), ct)).ToHttpResult());
@@ -37,7 +38,7 @@ public static class ItemEndpoints
             Guid id, UpdateItemRequest body, ISender sender, CancellationToken ct) =>
             (await sender.Send(
                 new UpdateItemCommand(
-                    id, body.Name, body.Category, body.Barcode, body.TrackingType, body.Unit),
+                    id, body.Name, body.Category, body.Barcode, body.TrackingType, body.Unit, body.MinimumQuantity),
                 ct)).ToHttpResult());
 
         group.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
@@ -64,4 +65,5 @@ public sealed record UpdateItemRequest(
     string? Category,
     string? Barcode,
     TrackingType TrackingType,
-    string? Unit);
+    string? Unit,
+    int? MinimumQuantity = null);

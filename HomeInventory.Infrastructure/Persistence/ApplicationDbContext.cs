@@ -38,6 +38,10 @@ public class ApplicationDbContext
 
     public DbSet<Movement> Movements => Set<Movement>();
 
+    public DbSet<NotificationSettings> NotificationSettings => Set<NotificationSettings>();
+
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

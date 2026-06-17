@@ -13,7 +13,8 @@ internal static class ItemMappingExtensions
             item.TrackingType,
             item.Unit,
             photoUrl,
-            totalQuantity);
+            totalQuantity,
+            item.MinimumQuantity);
 
     public static StockLotDto ToDto(
         this StockLot lot,

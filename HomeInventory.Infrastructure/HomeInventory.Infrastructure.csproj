@@ -19,6 +19,7 @@
     <!-- Pins EFCore.Relational to 10.0.8 (the Npgsql 10.0.2 provider brings 10.0.4) and avoids MSB3277. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
+    <PackageReference Include="WebPush" Version="1.0.11" />
   </ItemGroup>
 
 </Project>

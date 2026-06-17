@@ -11,4 +11,5 @@ public sealed record ItemDto(
     TrackingType TrackingType,
     string? Unit,
     string? PhotoUrl,
-    decimal TotalQuantity);
+    decimal TotalQuantity,
+    int? MinimumQuantity);

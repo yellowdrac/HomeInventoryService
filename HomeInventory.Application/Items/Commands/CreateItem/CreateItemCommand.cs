@@ -16,5 +16,6 @@ public sealed record CreateItemCommand(
     string? Category,
     string? Barcode,
     TrackingType TrackingType,
-    string? Unit)
+    string? Unit,
+    int? MinimumQuantity = null)
     : IRequest<Result<ItemDto>>;

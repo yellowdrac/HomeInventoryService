@@ -12,4 +12,5 @@ public sealed record ItemDetailDto(
     string? Unit,
     string? PhotoUrl,
     decimal TotalQuantity,
+    int? MinimumQuantity,
     IReadOnlyList<StockLotDto> Lots);
