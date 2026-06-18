@@ -49,7 +49,7 @@ public sealed class SearchInventoryQueryHandler
 
         // Small per-household dataset: load once and rank in memory (mirrors the approach used by
         // the location queries) so the search stays provider-agnostic.
-        var items = await itemsQuery.ToListAsync(cancellationToken);
+        var items = await itemsQuery.Include(i => i.Unit).ToListAsync(cancellationToken);
 
         var ranked = items
             .Select(item => Rank(item, term, rawQuery, isCodeLike))
@@ -151,7 +151,7 @@ public sealed class SearchInventoryQueryHandler
             item.Name,
             item.Category,
             item.TrackingType,
-            item.Unit,
+            item.Unit?.Symbol,
             totalQuantity,
             placements);
     }

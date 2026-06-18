@@ -40,7 +40,7 @@ public class GetItemByIdQueryHandlerTests
         var item = new Item
         {
             Id = _itemId, HouseholdId = _householdId, Name = "Batteries",
-            NormalizedName = "batteries", TrackingType = TrackingType.Quantity, Unit = "unit",
+            NormalizedName = "batteries", TrackingType = TrackingType.Quantity,
         };
         var locations = new List<Location>
         {
@@ -69,7 +69,7 @@ public class GetItemByIdQueryHandlerTests
         var item = new Item
         {
             Id = _itemId, HouseholdId = _householdId, Name = "Yogurt",
-            NormalizedName = "yogurt", TrackingType = TrackingType.Quantity, Unit = "unit",
+            NormalizedName = "yogurt", TrackingType = TrackingType.Quantity,
         };
         var location = new Location
         {

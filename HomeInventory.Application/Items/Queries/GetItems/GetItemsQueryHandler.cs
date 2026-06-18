@@ -90,6 +90,7 @@ public sealed class GetItemsQueryHandler
             .OrderBy(i => i.Name)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
+            .Include(i => i.Unit)
             .ToListAsync(cancellationToken);
 
         var itemIds = pageItems.Select(i => i.Id).ToList();

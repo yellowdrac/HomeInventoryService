@@ -38,7 +38,7 @@ public static class ItemEndpoints
             Guid id, UpdateItemRequest body, ISender sender, CancellationToken ct) =>
             (await sender.Send(
                 new UpdateItemCommand(
-                    id, body.Name, body.Category, body.Barcode, body.TrackingType, body.Unit, body.MinimumQuantity),
+                    id, body.Name, body.Category, body.Barcode, body.TrackingType, body.UnitId, body.MinimumQuantity),
                 ct)).ToHttpResult());
 
         group.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
@@ -65,5 +65,5 @@ public sealed record UpdateItemRequest(
     string? Category,
     string? Barcode,
     TrackingType TrackingType,
-    string? Unit,
+    Guid? UnitId,
     int? MinimumQuantity = null);

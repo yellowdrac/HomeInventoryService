@@ -13,7 +13,7 @@ public class UpdateItemCommandValidatorTests
     public void Valid_command_passes()
     {
         var result = _validator.TestValidate(
-            new UpdateItemCommand(Guid.NewGuid(), "Batteries", null, null, TrackingType.Quantity, "unit"));
+            new UpdateItemCommand(Guid.NewGuid(), "Batteries", null, null, TrackingType.Quantity, null));
 
         result.ShouldNotHaveAnyValidationErrors();
     }

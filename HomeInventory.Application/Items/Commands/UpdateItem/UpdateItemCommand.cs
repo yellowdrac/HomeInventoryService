@@ -15,6 +15,6 @@ public sealed record UpdateItemCommand(
     string? Category,
     string? Barcode,
     TrackingType TrackingType,
-    string? Unit,
+    Guid? UnitId,
     int? MinimumQuantity = null)
     : IRequest<Result<ItemDto>>;

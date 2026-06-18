@@ -22,7 +22,5 @@ public sealed class UpdateItemCommandValidator : AbstractValidator<UpdateItemCom
         RuleFor(x => x.Barcode)
             .MaximumLength(64);
 
-        RuleFor(x => x.Unit)
-            .MaximumLength(32);
     }
 }

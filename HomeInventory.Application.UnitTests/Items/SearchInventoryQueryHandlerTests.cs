@@ -47,7 +47,6 @@ public class SearchInventoryQueryHandlerTests
         Category = category,
         Barcode = barcode,
         TrackingType = TrackingType.Quantity,
-        Unit = "unit",
     };
 
     [Fact]

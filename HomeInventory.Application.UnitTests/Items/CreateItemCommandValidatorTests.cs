@@ -13,7 +13,7 @@ public class CreateItemCommandValidatorTests
     public void Valid_command_passes()
     {
         var result = _validator.TestValidate(
-            new CreateItemCommand("Batteries", "Electronics", "123456", TrackingType.Quantity, "unit"));
+            new CreateItemCommand("Batteries", "Electronics", "123456", TrackingType.Quantity, null));
 
         result.ShouldNotHaveAnyValidationErrors();
     }

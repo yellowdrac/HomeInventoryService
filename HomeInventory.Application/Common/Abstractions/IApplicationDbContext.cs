@@ -18,6 +18,8 @@ public interface IApplicationDbContext
 
     DbSet<StockLot> StockLots { get; }
 
+    DbSet<Unit> Units { get; }
+
     DbSet<Movement> Movements { get; }
 
     DbSet<NotificationSettings> NotificationSettings { get; }

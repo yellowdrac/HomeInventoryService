@@ -33,6 +33,7 @@ public sealed class GetItemByIdQueryHandler : IRequestHandler<GetItemByIdQuery, 
         }
 
         var item = await _context.Items
+            .Include(i => i.Unit)
             .FirstOrDefaultAsync(
                 i => i.Id == request.Id && i.HouseholdId == householdId,
                 cancellationToken);
@@ -66,7 +67,8 @@ public sealed class GetItemByIdQueryHandler : IRequestHandler<GetItemByIdQuery, 
             item.Category,
             item.Barcode,
             item.TrackingType,
-            item.Unit,
+            item.UnitId,
+            item.Unit?.Symbol,
             _fileStorage.GetPresignedReadUrlOrNull(item.PhotoUrl),
             totalQuantity,
             item.MinimumQuantity,

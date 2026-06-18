@@ -15,8 +15,12 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.Property(i => i.Category).HasMaxLength(100);
         builder.Property(i => i.Barcode).HasMaxLength(64);
         builder.Property(i => i.PhotoUrl).HasMaxLength(2048);
-        builder.Property(i => i.Unit).HasMaxLength(32);
         builder.Property(i => i.TrackingType).HasConversion<string>().HasMaxLength(20).IsRequired();
+
+        builder.HasOne(i => i.Unit)
+            .WithMany()
+            .HasForeignKey(i => i.UnitId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(i => i.HouseholdId);
 
