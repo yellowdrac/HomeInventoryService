@@ -61,7 +61,8 @@ public sealed class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand
         item.Category = request.Category;
         item.Barcode = request.Barcode;
         item.TrackingType = request.TrackingType;
-        item.Unit = request.Unit;
+        item.UnitId = request.UnitId;
+        item.MinimumQuantity = request.MinimumQuantity;
         item.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -70,6 +71,10 @@ public sealed class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand
             .Where(s => s.ItemId == item.Id && s.HouseholdId == householdId)
             .SumAsync(s => s.Quantity, cancellationToken);
 
-        return item.ToDto(totalQuantity, _fileStorage.GetPresignedReadUrlOrNull(item.PhotoUrl));
+        var unitSymbol = request.UnitId.HasValue
+            ? (await _context.Units.FindAsync([request.UnitId.Value], cancellationToken))?.Symbol
+            : null;
+
+        return item.ToDto(totalQuantity, _fileStorage.GetPresignedReadUrlOrNull(item.PhotoUrl), unitSymbol);
     }
 }

@@ -19,7 +19,5 @@ public sealed class CreateItemCommandValidator : AbstractValidator<CreateItemCom
         RuleFor(x => x.Barcode)
             .MaximumLength(64);
 
-        RuleFor(x => x.Unit)
-            .MaximumLength(32);
     }
 }

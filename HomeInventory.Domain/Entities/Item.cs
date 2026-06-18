@@ -26,5 +26,12 @@ public class Item : BaseEntity, IHouseholdScoped
 
     public TrackingType TrackingType { get; set; }
 
-    public string? Unit { get; set; }
+    public Guid? UnitId { get; set; }
+    public Unit? Unit { get; set; }
+
+    /// <summary>
+    /// Alert threshold: triggers a "running low" warning when total stock falls below this value.
+    /// Null means no threshold is set. Only meaningful for Quantity-tracked items.
+    /// </summary>
+    public int? MinimumQuantity { get; set; }
 }

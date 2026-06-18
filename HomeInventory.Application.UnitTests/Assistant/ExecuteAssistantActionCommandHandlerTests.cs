@@ -37,7 +37,7 @@ public class ExecuteAssistantActionCommandHandlerTests
         new(id, name, LocationType.Room, null, "slug");
 
     private static ItemDto MakeItemDto(Guid id, string name) =>
-        new(id, name, null, null, TrackingType.Quantity, null, null, 0);
+        new(id, name, null, null, TrackingType.Quantity, null, null, null, 0, null);
 
     [Fact]
     public async Task Fails_when_user_has_no_household()

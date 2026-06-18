@@ -74,6 +74,34 @@ public sealed class OpenAiCompatibleChatClient : ILlmChatClient
                 $"The assistant provider returned status {(int)response.StatusCode}.");
         }
 
+        // Log the model that actually handled the request.
+        // Useful when the configured model is a routing alias (e.g. "openrouter/free")
+        // because the response always contains the real model that was selected.
+        try
+        {
+            using var doc = JsonDocument.Parse(payload);
+            if (doc.RootElement.TryGetProperty("model", out var modelEl)
+                && modelEl.ValueKind == JsonValueKind.String)
+            {
+                var resolvedModel = modelEl.GetString();
+                if (resolvedModel != _options.Model)
+                {
+                    _logger.LogInformation(
+                        "Model alias '{Alias}' resolved to '{Model}'",
+                        _options.Model,
+                        resolvedModel);
+                }
+                else
+                {
+                    _logger.LogDebug("Model: {Model}", resolvedModel);
+                }
+            }
+        }
+        catch
+        {
+            // Non-critical — never let logging crash the response path.
+        }
+
         return ParseResponse(payload);
     }
 
@@ -149,16 +177,25 @@ public sealed class OpenAiCompatibleChatClient : ILlmChatClient
 
     private static JsonObject BuildAssistantMessage(LlmMessage message)
     {
-        var assistant = new JsonObject
-        {
-            ["role"] = "assistant",
-            ["content"] = message.Content ?? string.Empty,
-        };
+        var hasToolCalls = message.ToolCalls is { Count: > 0 };
 
-        if (message.ToolCalls is { Count: > 0 })
+        var assistant = new JsonObject { ["role"] = "assistant" };
+
+        // The OpenAI spec requires content=null (not "") when tool_calls is present.
+        // Sending an empty string causes several providers (Cohere, Nvidia) to reject the message.
+        if (!hasToolCalls || !string.IsNullOrEmpty(message.Content))
+        {
+            assistant["content"] = message.Content;
+        }
+        else
+        {
+            assistant["content"] = JsonValue.Create((string?)null);
+        }
+
+        if (hasToolCalls)
         {
             var toolCalls = new JsonArray();
-            foreach (var call in message.ToolCalls)
+            foreach (var call in message.ToolCalls!)
             {
                 toolCalls.Add(new JsonObject
                 {
@@ -167,9 +204,8 @@ public sealed class OpenAiCompatibleChatClient : ILlmChatClient
                     ["function"] = new JsonObject
                     {
                         ["name"] = call.Name,
-                        ["arguments"] = string.IsNullOrWhiteSpace(call.ArgumentsJson)
-                            ? "{}"
-                            : call.ArgumentsJson,
+                        ["arguments"] = JsonValue.Create(
+                            string.IsNullOrWhiteSpace(call.ArgumentsJson) ? "{}" : call.ArgumentsJson),
                     },
                 });
             }
@@ -217,10 +253,23 @@ public sealed class OpenAiCompatibleChatClient : ILlmChatClient
                 var name = function.TryGetProperty("name", out var nameValue)
                     ? nameValue.GetString()
                     : null;
-                var arguments = function.TryGetProperty("arguments", out var argsValue)
-                    && argsValue.ValueKind == JsonValueKind.String
-                        ? argsValue.GetString() ?? "{}"
-                        : "{}";
+                // Some providers return arguments as a JSON string (standard OpenAI format);
+                // others return a raw JSON object. Handle both so the tool-calling loop
+                // always receives a non-null JSON string it can deserialize.
+                string arguments;
+                if (function.TryGetProperty("arguments", out var argsValue))
+                {
+                    arguments = argsValue.ValueKind switch
+                    {
+                        JsonValueKind.String => argsValue.GetString() ?? "{}",
+                        JsonValueKind.Object or JsonValueKind.Array => argsValue.GetRawText(),
+                        _ => "{}",
+                    };
+                }
+                else
+                {
+                    arguments = "{}";
+                }
 
                 if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(name))
                 {

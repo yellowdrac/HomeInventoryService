@@ -77,6 +77,9 @@ namespace HomeInventory.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("HouseholdId")
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("MinimumQuantity")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -96,9 +99,8 @@ namespace HomeInventory.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<string>("Unit")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<Guid?>("UnitId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -112,6 +114,8 @@ namespace HomeInventory.Infrastructure.Persistence.Migrations
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("NormalizedName"), "gin");
                     NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("NormalizedName"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("UnitId");
 
                     b.HasIndex("HouseholdId", "NormalizedName")
                         .IsUnique()
@@ -223,6 +227,79 @@ namespace HomeInventory.Infrastructure.Persistence.Migrations
                     b.ToTable("Movements");
                 });
 
+            modelBuilder.Entity("HomeInventory.Domain.Entities.NotificationSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AlertWindowDays")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EmailAddress")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("EmailEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("notification_settings", (string)null);
+                });
+
+            modelBuilder.Entity("HomeInventory.Domain.Entities.PushSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AuthKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("P256dhKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Endpoint");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("push_subscriptions", (string)null);
+                });
+
             modelBuilder.Entity("HomeInventory.Domain.Entities.StockLot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -263,6 +340,205 @@ namespace HomeInventory.Infrastructure.Persistence.Migrations
                     b.HasIndex("LocationId");
 
                     b.ToTable("StockLots");
+                });
+
+            modelBuilder.Entity("HomeInventory.Domain.Entities.Unit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("units", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000001"),
+                            Category = "Count",
+                            Name = "Unit",
+                            SortOrder = 1,
+                            Symbol = "unit"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000002"),
+                            Category = "Count",
+                            Name = "Pack",
+                            SortOrder = 2,
+                            Symbol = "pack"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000003"),
+                            Category = "Count",
+                            Name = "Box",
+                            SortOrder = 3,
+                            Symbol = "box"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000004"),
+                            Category = "Count",
+                            Name = "Bag",
+                            SortOrder = 4,
+                            Symbol = "bag"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000005"),
+                            Category = "Count",
+                            Name = "Bottle",
+                            SortOrder = 5,
+                            Symbol = "bottle"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000006"),
+                            Category = "Count",
+                            Name = "Can",
+                            SortOrder = 6,
+                            Symbol = "can"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000007"),
+                            Category = "Count",
+                            Name = "Jar",
+                            SortOrder = 7,
+                            Symbol = "jar"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000008"),
+                            Category = "Count",
+                            Name = "Roll",
+                            SortOrder = 8,
+                            Symbol = "roll"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000009"),
+                            Category = "Weight",
+                            Name = "Gram",
+                            SortOrder = 10,
+                            Symbol = "g"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000010"),
+                            Category = "Weight",
+                            Name = "Kilogram",
+                            SortOrder = 11,
+                            Symbol = "kg"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000011"),
+                            Category = "Weight",
+                            Name = "Milligram",
+                            SortOrder = 12,
+                            Symbol = "mg"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000012"),
+                            Category = "Weight",
+                            Name = "Pound",
+                            SortOrder = 13,
+                            Symbol = "lb"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000014"),
+                            Category = "Volume",
+                            Name = "Milliliter",
+                            SortOrder = 20,
+                            Symbol = "mL"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000015"),
+                            Category = "Volume",
+                            Name = "Liter",
+                            SortOrder = 21,
+                            Symbol = "L"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000016"),
+                            Category = "Volume",
+                            Name = "Cup",
+                            SortOrder = 22,
+                            Symbol = "cup"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000017"),
+                            Category = "Volume",
+                            Name = "Tablespoon",
+                            SortOrder = 23,
+                            Symbol = "tbsp"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000018"),
+                            Category = "Volume",
+                            Name = "Teaspoon",
+                            SortOrder = 24,
+                            Symbol = "tsp"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000019"),
+                            Category = "Volume",
+                            Name = "Fluid Ounce",
+                            SortOrder = 25,
+                            Symbol = "fl oz"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000020"),
+                            Category = "Length",
+                            Name = "Meter",
+                            SortOrder = 30,
+                            Symbol = "m"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000021"),
+                            Category = "Length",
+                            Name = "Centimeter",
+                            SortOrder = 31,
+                            Symbol = "cm"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000001-0000-0000-0000-000000000022"),
+                            Category = "Length",
+                            Name = "Millimeter",
+                            SortOrder = 32,
+                            Symbol = "mm"
+                        });
                 });
 
             modelBuilder.Entity("HomeInventory.Infrastructure.Identity.ApplicationUser", b =>
@@ -498,6 +774,16 @@ namespace HomeInventory.Infrastructure.Persistence.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("HomeInventory.Domain.Entities.Item", b =>
+                {
+                    b.HasOne("HomeInventory.Domain.Entities.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("HomeInventory.Domain.Entities.Location", b =>

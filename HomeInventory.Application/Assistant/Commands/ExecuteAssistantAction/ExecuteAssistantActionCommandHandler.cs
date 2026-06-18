@@ -139,7 +139,7 @@ public sealed class ExecuteAssistantActionCommandHandler
             action.ItemCategory,
             null,
             trackingType,
-            action.ItemUnit);
+            null);
 
         var result = await _sender.Send(cmd, ct);
         if (result.IsFailure) return Result.Failure(result.Error);

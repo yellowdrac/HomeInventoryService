@@ -9,6 +9,8 @@ public sealed record ItemDto(
     string? Category,
     string? Barcode,
     TrackingType TrackingType,
+    Guid? UnitId,
     string? Unit,
     string? PhotoUrl,
-    decimal TotalQuantity);
+    decimal TotalQuantity,
+    int? MinimumQuantity);

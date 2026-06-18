@@ -6,6 +6,7 @@ using HomeInventory.Application.Assistant.Llm;
 using HomeInventory.Application.Common.Abstractions;
 using HomeInventory.Infrastructure.Assistant;
 using HomeInventory.Infrastructure.Identity;
+using HomeInventory.Infrastructure.Notifications;
 using HomeInventory.Infrastructure.Persistence;
 using HomeInventory.Infrastructure.Storage;
 using Microsoft.AspNetCore.Identity;
@@ -81,6 +82,7 @@ public static class DependencyInjection
         services.AddSingleton<IFileStorage, S3FileStorage>();
 
         AddInventoryAssistant(services, configuration);
+        AddNotifications(services, configuration);
 
         return services;
     }
@@ -132,6 +134,19 @@ public static class DependencyInjection
         {
             services.AddHttpClient<ILlmChatClient, AnthropicChatClient>();
         }
+    }
+
+    private static void AddNotifications(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<NotificationOptions>(configuration.GetSection(NotificationOptions.SectionName));
+
+        // Typed HttpClient for Resend email API.
+        services.AddHttpClient<ResendEmailService>();
+        services.AddScoped<IEmailService, ResendEmailService>();
+
+        services.AddSingleton<IPushNotificationService, WebPushNotificationService>();
+
+        services.AddHostedService<ExpirationNotificationWorker>();
     }
 
     // Anything that isn't first-party Anthropic is treated as an OpenAI-compatible /chat/completions

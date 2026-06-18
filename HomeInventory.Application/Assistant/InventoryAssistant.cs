@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using HomeInventory.Application.Assistant.Common;
 using HomeInventory.Application.Assistant.Llm;
 using HomeInventory.Application.Assistant.Tools;
@@ -121,8 +122,17 @@ public sealed class InventoryAssistant : IInventoryAssistant
     private ChatResponse BuildResponse(string answer, List<AssistantReference> references)
     {
         var actions = _collector.Actions.Count > 0 ? _collector.Actions : null;
-        return new ChatResponse(answer, Deduplicate(references), actions, _collector.ClarificationQuestion);
+        return new ChatResponse(SanitizeAnswer(answer), Deduplicate(references), actions, _collector.ClarificationQuestion);
     }
+
+    // Some models emit XML-style tool-call blocks (e.g. <propose_move_stock>{...}</propose_move_stock>)
+    // inside their text responses alongside the proper tool_use API blocks.  Strip them so they never
+    // reach the frontend as raw markup.
+    private static readonly Regex XmlToolCallPattern =
+        new(@"<[a-z][a-z_]*>\s*\{[\s\S]*?\}\s*</[a-z][a-z_]*>", RegexOptions.Compiled);
+
+    private static string SanitizeAnswer(string text) =>
+        XmlToolCallPattern.Replace(text, string.Empty).Trim();
 
     private static IReadOnlyList<AssistantReference> Deduplicate(
         IEnumerable<AssistantReference> references) =>

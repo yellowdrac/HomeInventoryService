@@ -32,7 +32,7 @@ public class CreateItemCommandHandlerTests
         var handler = BuildHandler([]);
 
         var result = await handler.Handle(
-            new CreateItemCommand("Pilas AA Recargables Ácido", "Electrónica", null, TrackingType.Quantity, "unit"),
+            new CreateItemCommand("Pilas AA Recargables Ácido", "Electrónica", null, TrackingType.Quantity, null),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -71,7 +71,7 @@ public class CreateItemCommandHandlerTests
 
         // "Café" normalizes to "cafe", colliding with the existing item.
         var result = await handler.Handle(
-            new CreateItemCommand("Café", null, null, TrackingType.Quantity, "g"),
+            new CreateItemCommand("Café", null, null, TrackingType.Quantity, null),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();

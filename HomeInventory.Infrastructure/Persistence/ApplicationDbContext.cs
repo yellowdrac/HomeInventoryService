@@ -36,7 +36,13 @@ public class ApplicationDbContext
 
     public DbSet<StockLot> StockLots => Set<StockLot>();
 
+    public DbSet<Unit> Units => Set<Unit>();
+
     public DbSet<Movement> Movements => Set<Movement>();
+
+    public DbSet<NotificationSettings> NotificationSettings => Set<NotificationSettings>();
+
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

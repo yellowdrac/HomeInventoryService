@@ -39,5 +39,7 @@ public static class AssistantSystemPrompt
           move operations.
         - After using the propose_* tools, summarise what will happen (including sub-creations) and
           tell the user to confirm. You cannot skip the confirmation step.
+        - NEVER include raw XML or JSON tool-call blocks in your text replies. The tool call is
+          handled separately; your text must be plain, human-readable prose only.
         """;
 }

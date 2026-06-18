@@ -47,14 +47,19 @@ public sealed class CreateItemCommandHandler : IRequestHandler<CreateItemCommand
             Category = request.Category,
             Barcode = request.Barcode,
             TrackingType = request.TrackingType,
-            Unit = request.Unit,
+            UnitId = request.UnitId,
+            MinimumQuantity = request.MinimumQuantity,
             CreatedAt = DateTime.UtcNow,
         };
 
         _context.Items.Add(item);
         await _context.SaveChangesAsync(cancellationToken);
 
+        var unitSymbol = request.UnitId.HasValue
+            ? (await _context.Units.FindAsync([request.UnitId.Value], cancellationToken))?.Symbol
+            : null;
+
         // A newly created item never has a photo yet.
-        return item.ToDto(totalQuantity: 0, photoUrl: null);
+        return item.ToDto(totalQuantity: 0, photoUrl: null, unitSymbol: unitSymbol);
     }
 }

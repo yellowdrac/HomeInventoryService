@@ -9,7 +9,9 @@ public sealed record ItemDetailDto(
     string? Category,
     string? Barcode,
     TrackingType TrackingType,
+    Guid? UnitId,
     string? Unit,
     string? PhotoUrl,
     decimal TotalQuantity,
+    int? MinimumQuantity,
     IReadOnlyList<StockLotDto> Lots);
